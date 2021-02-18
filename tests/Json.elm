@@ -13,7 +13,7 @@ suite =
     describe "Test"
         [ testConverter "Primitives" primitives fuzzyPrimitives
         , testConverter "Containers" containers fuzzyContainers
-        , testConverter "Object" object fuzzyObject
+        , testConverter "Record" record fuzzyRecord
         ]
 
 
@@ -50,7 +50,7 @@ type alias Containers =
     }
 
 
-type alias Object =
+type alias Record =
     { nested : Primitives
     , option : Maybe String
     }
@@ -58,28 +58,28 @@ type alias Object =
 
 primitives : Converter Primitives
 primitives =
-    field "string" .string string
-        >> field "int" .int int
-        >> field "float" .float float
-        >> field "bool" .bool bool
-        >> field "null" .null (null ())
-        |> record Primitives
+    object Primitives <|
+        field "string" .string string
+            >> field "int" .int int
+            >> field "float" .float float
+            >> field "bool" .bool bool
+            >> field "null" .null (null ())
 
 
 containers : Converter Containers
 containers =
-    field "list" .list (list string)
-        >> field "array" .array (array int)
-        >> field "dict" .dict (dict float)
-        >> field "nullable" .nullable (nullable string)
-        |> record Containers
+    object Containers <|
+        field "list" .list (list string)
+            >> field "array" .array (array int)
+            >> field "dict" .dict (dict float)
+            >> field "nullable" .nullable (nullable string)
 
 
-object : Converter Object
-object =
-    field "nested" .nested primitives
-        >> option "option" .option string
-        |> record Object
+record : Converter Record
+record =
+    object Record <|
+        field "nested" .nested primitives
+            >> option "option" .option string
 
 
 fuzzyPrimitives : Fuzzer Primitives
@@ -104,8 +104,8 @@ fuzzyContainers =
         (Fuzz.maybe Fuzz.string)
 
 
-fuzzyObject : Fuzzer Object
-fuzzyObject =
-    Fuzz.map2 Object
+fuzzyRecord : Fuzzer Record
+fuzzyRecord =
+    Fuzz.map2 Record
         fuzzyPrimitives
         (Fuzz.maybe Fuzz.string)
