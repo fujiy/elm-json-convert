@@ -17,6 +17,21 @@ type alias Converter a =
     }
 
 
+encode : Converter a -> Int -> a -> String
+encode converter indent a =
+    E.encode indent <| converter.encoder a
+
+
+decodeString : Converter a -> String -> Result D.Error a
+decodeString converter =
+    D.decodeString converter.decoder
+
+
+decodeValue : Converter a -> Value -> Result D.Error a
+decodeValue converter =
+    D.decodeValue converter.decoder
+
+
 string : Converter String
 string =
     Converter E.string D.string
