@@ -39,7 +39,6 @@ import Array exposing (Array)
 import Dict exposing (Dict)
 import Json.Decode as D exposing (Decoder)
 import Json.Encode as E
-import Maybe.Extra as Maybe
 
 
 {-| Represents a JavaScript value.
@@ -173,7 +172,7 @@ dict c =
 -}
 nullable : Converter a -> Converter (Maybe a)
 nullable c =
-    Converter (Maybe.unwrap E.null c.encoder) (D.nullable c.decoder)
+    Converter (unwrap E.null c.encoder) (D.nullable c.decoder)
 
 
 {-| A helper data type for building an object converter.
@@ -232,3 +231,13 @@ option name getter { encoder, decoder } (Field encoders dec) =
     Field
         (( name, getter >> Maybe.map encoder ) :: encoders)
         (D.map2 identity dec <| D.maybe <| D.field name decoder)
+
+
+unwrap : b -> (a -> b) -> Maybe a -> b
+unwrap b f ma =
+    case ma of
+        Just a ->
+            f a
+
+        Nothing ->
+            b
