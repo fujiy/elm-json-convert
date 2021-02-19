@@ -1,7 +1,7 @@
 {
     "type": "package",
     "name": "fujiy/elm-json-convert",
-    "summary": "",
+    "summary": "Writing JSON encoder and decoder at once",
     "license": "BSD-3-Clause",
     "version": "1.0.0",
     "exposed-modules": [
