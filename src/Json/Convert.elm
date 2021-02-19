@@ -4,6 +4,7 @@ module Json.Convert exposing
     , string, int, float, bool, null
     , list, array, dict
     , Field, object, field, option
+    , Iso, map, reverse, compose
     , nullable, value, lazy
     )
 
@@ -35,6 +36,11 @@ module Json.Convert exposing
 @docs Field, object, field, option
 
 
+# Mappings
+
+@docs Iso, map, reverse, compose
+
+
 # Miscellaneous
 
 @docs nullable, value, lazy
@@ -54,6 +60,9 @@ type alias Value =
 
 
 {-| A pair of JSON encoder and decoder.
+
+You can make custom converters using this directly if you need.
+
 -}
 type alias Converter a =
     { encoder : a -> Value
@@ -183,7 +192,7 @@ nullable c =
 
 {-| A helper data type for building an object converter.
 
-The following functions have little tricky types, but you do not need to think about it! Just write like this:
+The following functions have a little tricky types, but you do not need to think about it! Just write like this:
 
     type alias User =
         { name : String
@@ -256,6 +265,45 @@ Use it like `lazy (\_ -> converter)` instead of just `converter` in order for th
 lazy : (() -> Converter a) -> Converter a
 lazy lc =
     Converter (\a -> (lc ()).encoder a) (D.lazy (lc >> .decoder))
+
+
+{-| A pair of a function and its inverse.
+Same definition for [Monocle.Iso](https://package.elm-lang.org/packages/arturopala/elm-monocle/latest/Monocle-Iso).
+-}
+type alias Iso a b =
+    { get : a -> b
+    , reverseGet : b -> a
+    }
+
+
+{-| Create the reversed isomorphism.
+-}
+reverse : Iso a b -> Iso b a
+reverse iso =
+    Iso iso.reverseGet iso.get
+
+
+{-| Compose two isomorphisms.
+-}
+compose : Iso a b -> Iso b c -> Iso a c
+compose f g =
+    Iso (f.get >> g.get) (f.reverseGet << g.reverseGet)
+
+
+{-| Transform a converter. You need `Iso a b` because the decoder requires a function `a -> b` and the encoder requires an inverse function `b -> a` to map.
+
+    string2CharListIso : Iso String (List Char)
+    string2CharListIso =
+        Iso String.toList String.fromList
+
+    charList : Converter (List Char)
+    charList =
+        map string2CharListIso string
+
+-}
+map : Iso a b -> Converter a -> Converter b
+map iso c =
+    Converter (iso.reverseGet >> c.encoder) (D.map iso.get c.decoder)
 
 
 unwrap : b -> (a -> b) -> Maybe a -> b

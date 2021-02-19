@@ -95,7 +95,13 @@ type alias Record =
     { nested : Primitives
     , option : Maybe String
     , nullable : Maybe Int
+    , mapping : List Char
     }
+
+
+string2chars : Iso String (List Char)
+string2chars =
+    Iso String.toList String.fromList
 
 
 record : Converter Record
@@ -104,14 +110,16 @@ record =
         field "nested" .nested primitives
             >> option "option" .option string
             >> field "nullable" .nullable (nullable int)
+            >> field "mapping" .mapping (map string2chars string)
 
 
 fuzzyRecord : Fuzzer Record
 fuzzyRecord =
-    Fuzz.map3 Record
+    Fuzz.map4 Record
         fuzzyPrimitives
         (Fuzz.maybe Fuzz.string)
         (Fuzz.maybe Fuzz.int)
+        (Fuzz.list Fuzz.char)
 
 
 type Tree a

@@ -60,12 +60,12 @@ type alias User =
 
 converter : Convert.Converter User
 converter =
-    object User 
+    object User
         <| Convert.field "name" .name Convert.string
         >> Convert.field "age" .age Convert.int
         >> Convert.option "height" .height Convert.float
-            
  
+
 json = "{ \"name\": \"tom\", \"age\": 42, \"height\": 1.8 } }"
 data = { name = "tom", age = 42, height = Just 1.8 }
 
