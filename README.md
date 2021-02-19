@@ -37,7 +37,12 @@ decoder =
         (Decode.field "name" Decode.string)
         (Decode.field "age" Decode.int)
         (Decode.field "height" <| Decode.nullable Decode.float)
+        
+json = "{ \"name\": \"tom\", \"age\": 42, \"height\": 1.8 } }"
+data = { name = "tom", age = 42, height = Just 1.8 }
 
+-- Encode.encode 0    (encoder data) ==    json
+-- Decode.decodeString decoder json  == Ok data
 ```
 However, this kind of boilerplates are boring and redundant. 
 
@@ -55,10 +60,17 @@ type alias User =
 
 converter : Convert.Converter User
 converter =
-    object User <|
-        Convert.field "name" .name Convert.string
-            >> Convert.field "age" .age Convert.int
-            >> Convert.option "height" .height Convert.float
+    object User 
+        <| Convert.field "name" .name Convert.string
+        >> Convert.field "age" .age Convert.int
+        >> Convert.option "height" .height Convert.float
+            
+ 
+json = "{ \"name\": \"tom\", \"age\": 42, \"height\": 1.8 } }"
+data = { name = "tom", age = 42, height = Just 1.8 }
+
+-- Converter.encode       converter 0 data ==    json
+-- Converter.decodeString converter   json == Ok data
 ```
 
 `Json.Convert` supports basic primitives, container data types, and objects.
