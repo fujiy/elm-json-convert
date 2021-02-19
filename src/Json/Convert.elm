@@ -1,9 +1,10 @@
 module Json.Convert exposing
     ( Converter
     , Value, encode, decodeValue, decodeString
-    , string, int, float, bool, null, nullable, value
+    , string, int, float, bool, null
     , list, array, dict
     , Field, object, field, option
+    , nullable, value, lazy
     )
 
 {-|
@@ -21,7 +22,7 @@ module Json.Convert exposing
 
 # Primitives
 
-@docs string, int, float, bool, null, nullable, value
+@docs string, int, float, bool, null
 
 
 # Containers
@@ -32,6 +33,11 @@ module Json.Convert exposing
 # Objects
 
 @docs Field, object, field, option
+
+
+# Miscellaneous
+
+@docs nullable, value, lazy
 
 -}
 
@@ -231,6 +237,25 @@ option name getter { encoder, decoder } (Field encoders dec) =
     Field
         (( name, getter >> Maybe.map encoder ) :: encoders)
         (D.map2 identity dec <| D.maybe <| D.field name decoder)
+
+
+{-| For building a converter of recursive structure.
+Use it like `lazy (\_ -> converter)` instead of just `converter` in order for the converter not to expand infinitly deep.
+
+    type Tree a
+        = Tree a (Maybe (Tree a)) (Maybe (Tree a))
+
+    tree : Converter a -> Converter (Tree a)
+    tree item =
+        object Tree <|
+            field "item" (\(Tree a _ _) -> a) item
+                >> option "left" (\(Tree _ l _) -> l) (lazy <| \_ -> tree item)
+                >> option "right" (\(Tree _ _ r) -> r) (lazy <| \_ -> tree item)
+
+-}
+lazy : (() -> Converter a) -> Converter a
+lazy lc =
+    Converter (\a -> (lc ()).encoder a) (D.lazy (lc >> .decoder))
 
 
 unwrap : b -> (a -> b) -> Maybe a -> b

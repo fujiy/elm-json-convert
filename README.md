@@ -42,7 +42,7 @@ decoder =
 However, this kind of boilerplates are boring and redundant. 
 
 The basic idea, inspired by [invertible-syntax](https://hackage.haskell.org/package/invertible-syntax), is that an encoder and a decoder are inverses of each other and have almost the same composition.
-By using this package, you only need to write such a boilerplate only once for each data structure, and you can get both an encoder and a decoder.
+By using this package, you only need to write such a boilerplate only once for each data structure, and you can get both an encoder and a decoder like this:
 
 ```elm
 import Json.Convert as Convert
@@ -61,4 +61,4 @@ converter =
             >> Convert.option "height" .height Convert.float
 ```
 
-`Json.Convert` supports basic primitives, container data types, and object.
+`Json.Convert` supports basic primitives, container data types, and objects.
